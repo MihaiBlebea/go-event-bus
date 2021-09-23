@@ -61,6 +61,16 @@ func (r *ProjectRepo) WithSlug(slug string) (*Project, error) {
 	return &project, err
 }
 
+func (r *ProjectRepo) All() ([]Project, error) {
+	projects := []Project{}
+	err := r.conn.Find(&projects).Error
+	if err != nil {
+		return projects, err
+	}
+
+	return projects, err
+}
+
 func (r *ProjectRepo) Store(project *Project) error {
 	return r.conn.Create(project).Error
 }

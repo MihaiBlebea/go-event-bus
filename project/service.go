@@ -4,6 +4,7 @@ import "errors"
 
 type Service interface {
 	Create(name string) (string, error)
+	Projects() ([]Project, error)
 	ParseToken(token string) (int, error)
 }
 
@@ -28,6 +29,10 @@ func (s *service) Create(name string) (string, error) {
 	}
 
 	return project.Token, nil
+}
+
+func (s *service) Projects() ([]Project, error) {
+	return s.projectRepo.All()
 }
 
 func (s *service) ParseToken(token string) (int, error) {

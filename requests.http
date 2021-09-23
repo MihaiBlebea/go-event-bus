@@ -28,6 +28,11 @@ content-type: application/json
 
 ###
 
+GET {{base_url}}/projects HTTP/2.0
+content-type: application/json
+
+###
+
 POST {{base_url}}/handle HTTP/2.0
 content-type: application/json
 
