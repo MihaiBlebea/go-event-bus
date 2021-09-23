@@ -1,0 +1,38 @@
+@base_url=http://localhost:8081/api/v1
+@token=Vx5eg4hpYwqacG9NbVp1
+
+###
+
+GET {{base_url}}/health-check HTTP/2.0
+content-type: application/json
+
+###
+
+POST {{base_url}}/subscribe HTTP/2.0
+content-type: application/json
+
+{
+	"token": "{{token}}",
+	"event": "bogus",
+	"url": "http://bogus.com"
+}
+
+###
+
+POST {{base_url}}/project HTTP/2.0
+content-type: application/json
+
+{
+	"name": "bogus project"
+}
+
+###
+
+POST {{base_url}}/handle HTTP/2.0
+content-type: application/json
+
+{
+	"token": "{{token}}",
+	"event": "bogus",
+	"payload": "{\"ceva\": true}"
+}
