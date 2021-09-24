@@ -7,12 +7,12 @@ import (
 )
 
 type Project struct {
-	ID      int       `json:"id"`
-	Name    string    `json:"name"`
-	Slug    string    `json:"slug"`
-	Token   string    `json:"token"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Slug      string    `json:"slug"`
+	Token     string    `json:"token"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Name struct {

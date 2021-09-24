@@ -2,12 +2,20 @@ package project
 
 import (
 	"net/http"
+	"time"
 )
 
 type ListResponse struct {
-	Projects []Project `json:"projects,omitempty"`
-	Success  bool      `json:"success"`
-	Message  string    `json:"message,omitempty"`
+	Projects []ProjectResponse `json:"projects,omitempty"`
+	Success  bool              `json:"success"`
+	Message  string            `json:"message,omitempty"`
+}
+
+type ProjectResponse struct {
+	Name    string    `json:"name"`
+	Slug    string    `json:"slug"`
+	Token   string    `json:"token"`
+	Created time.Time `json:"created"`
 }
 
 func ListHandler(s Service) http.Handler {
@@ -22,7 +30,14 @@ func ListHandler(s Service) http.Handler {
 		}
 
 		response.Success = true
-		response.Projects = projects
+		for _, proj := range projects {
+			response.Projects = append(response.Projects, ProjectResponse{
+				Name:    proj.Name,
+				Slug:    proj.Slug,
+				Token:   proj.Token,
+				Created: proj.CreatedAt,
+			})
+		}
 
 		sendResponse(w, response, http.StatusOK)
 	})

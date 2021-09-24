@@ -9,8 +9,8 @@ type Event struct {
 	ProjectID int       `json:"project_id"`
 	EventName string    `json:"event_name"`
 	Payload   string    `json:"payload"`
-	Created   time.Time `json:"created"`
-	Updated   time.Time `json:"updated"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func New(projectID int, eventName string, payload string) *Event {

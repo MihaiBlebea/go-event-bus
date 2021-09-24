@@ -10,8 +10,8 @@ type Subscriber struct {
 	EventName  string    `json:"event_name"`
 	HandlerUrl string    `json:"handler_url"`
 	Active     bool      `json:"active"`
-	Created    time.Time `json:"created"`
-	Updated    time.Time `json:"updated"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func New(projectID int, eventName, handlerUrl string, active bool) *Subscriber {
