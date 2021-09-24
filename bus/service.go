@@ -13,6 +13,7 @@ import (
 
 type Service interface {
 	AddSubscriber(projectID int, eventName, handlerUrl string) error
+	GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error)
 	HandleIncomingEvent(projectID int, eventName, payload string) error
 }
 
@@ -29,12 +30,20 @@ func NewService(conn *gorm.DB) Service {
 }
 
 func (s *service) AddSubscriber(projectID int, eventName, handlerUrl string) error {
+	if _, err := s.subscriberRepo.WithEventName(eventName); err == nil {
+		return errors.New("subscriber already exists")
+	}
+
 	sub := subscriber.New(projectID, eventName, handlerUrl, true)
 	if err := s.subscriberRepo.Store(sub); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *service) GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error) {
+	return s.subscriberRepo.WithProjectID(projectID)
 }
 
 func (s *service) HandleIncomingEvent(projectID int, eventName, payload string) error {

@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-
-	"github.com/MihaiBlebea/go-event-bus/project"
 )
+
+type ProjectService interface {
+	ParseToken(token string) (int, error)
+}
 
 type SubscribeRequest struct {
 	Token string `json:"token"`
@@ -19,7 +21,7 @@ type SubscribeResponse struct {
 	Message string `json:"message,omitempty"`
 }
 
-func SubscribeHandler(s Service, p project.Service) http.Handler {
+func SubscribeHandler(s Service, p ProjectService) http.Handler {
 	validate := func(r *http.Request) (*SubscribeRequest, error) {
 		request := SubscribeRequest{}
 

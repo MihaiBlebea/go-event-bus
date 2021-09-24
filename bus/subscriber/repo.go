@@ -43,6 +43,20 @@ func (r *SubscriberRepo) WithProjectID(id int) ([]Subscriber, error) {
 	return subscribers, err
 }
 
+func (r *SubscriberRepo) WithEventName(event string) (*Subscriber, error) {
+	subscriber := Subscriber{}
+	err := r.conn.Where("event_name = ?", event).Find(&subscriber).Error
+	if err != nil {
+		return &subscriber, err
+	}
+
+	if subscriber.ID == 0 {
+		return &subscriber, ErrNoRecord
+	}
+
+	return &subscriber, err
+}
+
 func (r *SubscriberRepo) Store(subscriber *Subscriber) error {
 	return r.conn.Create(subscriber).Error
 }

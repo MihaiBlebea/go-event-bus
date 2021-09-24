@@ -30,7 +30,7 @@ func New(b bus.Service, proj project.Service, logger *logrus.Logger) {
 	api.Handle("/project", project.CreateHandler(proj)).
 		Methods(http.MethodPost)
 
-	api.Handle("/projects", project.ListHandler(proj)).
+	api.Handle("/projects", project.ListHandler(proj, b)).
 		Methods(http.MethodGet)
 
 	api.Handle("/subscribe", bus.SubscribeHandler(b, proj)).

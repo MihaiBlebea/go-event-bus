@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-
-	"github.com/MihaiBlebea/go-event-bus/project"
 )
 
 type TriggerRequest struct {
@@ -19,7 +17,7 @@ type TriggerResponse struct {
 	Message string `json:"message,omitempty"`
 }
 
-func TriggerHandler(s Service, p project.Service) http.Handler {
+func TriggerHandler(s Service, p ProjectService) http.Handler {
 	validate := func(r *http.Request) (*TriggerRequest, error) {
 		request := TriggerRequest{}
 
