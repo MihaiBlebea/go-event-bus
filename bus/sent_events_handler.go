@@ -24,6 +24,7 @@ type SentEventsResponse struct {
 type EventResponse struct {
 	Name         string    `json:"name"`
 	Url          string    `json:"url"`
+	Sent         bool      `json:"sent"`
 	ErrorMessage string    `json:"error_message,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
 }
@@ -92,6 +93,7 @@ func SentEventsHandler(s Service, p project.Service) http.Handler {
 			response.Events = append(response.Events, EventResponse{
 				Name:      ev.Name,
 				Url:       ev.Url,
+				Sent:      ev.Success,
 				CreatedAt: ev.CreatedAt,
 			})
 		}

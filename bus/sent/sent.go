@@ -10,6 +10,7 @@ type Sent struct {
 	SubscriberID int       `json:"subscriber_id"`
 	Name         string    `json:"name"`
 	Url          string    `json:"url"`
+	Success      bool      `json:"success"`
 	ErrorMessage string    `json:"error_message"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -20,11 +21,17 @@ func New(
 	name, url string,
 	errorMessage string) *Sent {
 
+	var success bool
+	if errorMessage == "" {
+		success = true
+	}
+
 	return &Sent{
 		ProjectID:    projectID,
 		SubscriberID: subscriberID,
 		Name:         name,
 		Url:          url,
+		Success:      success,
 		ErrorMessage: errorMessage,
 	}
 }
