@@ -4,26 +4,23 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/MihaiBlebea/go-event-bus/project"
 )
 
-type ProjectService interface {
-	ParseToken(token string) (int, error)
-}
-
-type SubscribeRequest struct {
+type UnsubscribeRequest struct {
 	Token string `json:"token"`
 	Event string `json:"event"`
-	Url   string `json:"url"`
 }
 
-type SubscribeResponse struct {
+type UnsubscribeResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message,omitempty"`
 }
 
-func SubscribeHandler(s Service, p ProjectService) http.Handler {
-	validate := func(r *http.Request) (*SubscribeRequest, error) {
-		request := SubscribeRequest{}
+func UnsubscribeHandler(s Service, p project.Service) http.Handler {
+	validate := func(r *http.Request) (*UnsubscribeRequest, error) {
+		request := UnsubscribeRequest{}
 
 		err := json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {
@@ -38,15 +35,11 @@ func SubscribeHandler(s Service, p ProjectService) http.Handler {
 			return &request, errors.New("invalid request param event")
 		}
 
-		if request.Url == "" {
-			return &request, errors.New("invalid request param url")
-		}
-
 		return &request, nil
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		response := SubscribeResponse{}
+		response := UnsubscribeResponse{}
 
 		request, err := validate(r)
 		if err != nil {
@@ -62,7 +55,7 @@ func SubscribeHandler(s Service, p ProjectService) http.Handler {
 			return
 		}
 
-		if err := s.Subscribe(projectID, request.Event, request.Url); err != nil {
+		if err := s.Unsubscribe(projectID, request.Event); err != nil {
 			response.Message = err.Error()
 			sendResponse(w, response, http.StatusBadRequest)
 			return
@@ -72,14 +65,4 @@ func SubscribeHandler(s Service, p ProjectService) http.Handler {
 
 		sendResponse(w, response, http.StatusOK)
 	})
-}
-
-func sendResponse(w http.ResponseWriter, resp interface{}, code int) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
-
-	b, _ := json.Marshal(resp)
-
-	w.Write(b)
 }

@@ -39,6 +39,9 @@ func New(b bus.Service, proj project.Service, logger *logrus.Logger) {
 	api.Handle("/subscribe", bus.SubscribeHandler(b, proj)).
 		Methods(http.MethodPost)
 
+	api.Handle("/unsubscribe", bus.UnsubscribeHandler(b, proj)).
+		Methods(http.MethodPost)
+
 	api.Handle("/handle", bus.TriggerHandler(b, proj)).
 		Methods(http.MethodPost)
 

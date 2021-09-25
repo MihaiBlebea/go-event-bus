@@ -1,10 +1,7 @@
 package bus
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"net/http"
 
 	"github.com/MihaiBlebea/go-event-bus/bus/event"
 	"github.com/MihaiBlebea/go-event-bus/bus/sent"
@@ -13,7 +10,8 @@ import (
 )
 
 type Service interface {
-	AddSubscriber(projectID int, eventName, handlerUrl string) error
+	Subscribe(projectID int, eventName, handlerUrl string) error
+	Unsubscribe(projectID int, eventName string) error
 	GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error)
 	GetProcessedEvents(projectID int, pagination struct{ PerPage, Page int }) ([]sent.Sent, error)
 	HandleIncomingEvent(projectID int, eventName, payload string) error
@@ -33,7 +31,7 @@ func NewService(conn *gorm.DB) Service {
 	}
 }
 
-func (s *service) AddSubscriber(projectID int, eventName, handlerUrl string) error {
+func (s *service) Subscribe(projectID int, eventName, handlerUrl string) error {
 	if _, err := s.subscriberRepo.WithEventName(eventName); err == nil {
 		return errors.New("subscriber already exists")
 	}
@@ -44,6 +42,19 @@ func (s *service) AddSubscriber(projectID int, eventName, handlerUrl string) err
 	}
 
 	return nil
+}
+
+func (s *service) Unsubscribe(projectID int, eventName string) error {
+	sub, err := s.subscriberRepo.WithEventName(eventName)
+	if err != nil {
+		return err
+	}
+
+	if sub.ProjectID != projectID {
+		return errors.New("resource not own")
+	}
+
+	return s.subscriberRepo.Delete(sub)
 }
 
 func (s *service) GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error) {
@@ -79,55 +90,4 @@ func (s *service) HandleIncomingEvent(projectID int, eventName, payload string) 
 	}
 
 	return nil
-}
-
-func (s *service) post(endpoint string, payload interface{}) error {
-	b, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest(
-		"POST",
-		endpoint,
-		bytes.NewBuffer(b),
-	)
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		return errors.New("request status is not 200")
-	}
-
-	return nil
-}
-
-func (s *service) sentEventFailed(
-	projectID int,
-	sub *subscriber.Subscriber,
-	event, message string) error {
-
-	return s.sentRepo.Store(
-		sent.New(projectID, sub.ID, event, sub.HandlerUrl, message),
-	)
-}
-
-func (s *service) sentEventSuccess(
-	projectID int,
-	sub *subscriber.Subscriber,
-	event string) error {
-
-	return s.sentRepo.Store(
-		sent.New(projectID, sub.ID, event, sub.HandlerUrl, ""),
-	)
 }
