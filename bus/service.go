@@ -15,7 +15,7 @@ import (
 type Service interface {
 	AddSubscriber(projectID int, eventName, handlerUrl string) error
 	GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error)
-	GetProcessedEvents(projectID int) ([]sent.Sent, error)
+	GetProcessedEvents(projectID int, pagination struct{ PerPage, Page int }) ([]sent.Sent, error)
 	HandleIncomingEvent(projectID int, eventName, payload string) error
 }
 
@@ -50,8 +50,12 @@ func (s *service) GetProjectSubscribers(projectID int) ([]subscriber.Subscriber,
 	return s.subscriberRepo.WithProjectID(projectID)
 }
 
-func (s *service) GetProcessedEvents(projectID int) ([]sent.Sent, error) {
-	return s.sentRepo.WithProjectID(projectID)
+func (s *service) GetProcessedEvents(
+	projectID int,
+	paginate struct{ PerPage, Page int }) ([]sent.Sent, error) {
+
+	offset := (paginate.Page - 1) * paginate.PerPage
+	return s.sentRepo.WithProjectIDPaginated(projectID, offset, paginate.PerPage)
 }
 
 func (s *service) HandleIncomingEvent(projectID int, eventName, payload string) error {

@@ -43,6 +43,16 @@ func (r *SentRepo) WithProjectID(id int) ([]Sent, error) {
 	return sents, err
 }
 
+func (r *SentRepo) WithProjectIDPaginated(id, offset, pageSize int) ([]Sent, error) {
+	sents := []Sent{}
+	err := r.conn.Where("project_id = ?", id).Offset(offset).Limit(pageSize).Find(&sents).Error
+	if err != nil {
+		return sents, err
+	}
+
+	return sents, err
+}
+
 func (r *SentRepo) Store(sent *Sent) error {
 	return r.conn.Create(sent).Error
 }

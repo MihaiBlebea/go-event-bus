@@ -80,7 +80,8 @@ func SentEventsHandler(s Service, p project.Service) http.Handler {
 			return
 		}
 
-		events, err := s.GetProcessedEvents(projectID)
+		paginate := struct{ PerPage, Page int }{request.PerPage, request.Page}
+		events, err := s.GetProcessedEvents(projectID, paginate)
 		if err != nil {
 			response.Message = err.Error()
 			sendResponse(w, response, http.StatusBadRequest)
