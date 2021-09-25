@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/MihaiBlebea/go-event-bus/bus/event"
+	"github.com/MihaiBlebea/go-event-bus/bus/sent"
 	"github.com/MihaiBlebea/go-event-bus/bus/subscriber"
 	"gorm.io/gorm"
 )
@@ -14,18 +15,21 @@ import (
 type Service interface {
 	AddSubscriber(projectID int, eventName, handlerUrl string) error
 	GetProjectSubscribers(projectID int) ([]subscriber.Subscriber, error)
+	GetProcessedEvents(projectID int) ([]sent.Sent, error)
 	HandleIncomingEvent(projectID int, eventName, payload string) error
 }
 
 type service struct {
 	eventRepo      *event.EventRepo
 	subscriberRepo *subscriber.SubscriberRepo
+	sentRepo       *sent.SentRepo
 }
 
 func NewService(conn *gorm.DB) Service {
 	return &service{
 		eventRepo:      event.NewRepo(conn),
 		subscriberRepo: subscriber.NewRepo(conn),
+		sentRepo:       sent.NewRepo(conn),
 	}
 }
 
@@ -46,6 +50,10 @@ func (s *service) GetProjectSubscribers(projectID int) ([]subscriber.Subscriber,
 	return s.subscriberRepo.WithProjectID(projectID)
 }
 
+func (s *service) GetProcessedEvents(projectID int) ([]sent.Sent, error) {
+	return s.sentRepo.WithProjectID(projectID)
+}
+
 func (s *service) HandleIncomingEvent(projectID int, eventName, payload string) error {
 	event := event.New(projectID, eventName, payload)
 	if err := s.eventRepo.Store(event); err != nil {
@@ -58,15 +66,18 @@ func (s *service) HandleIncomingEvent(projectID int, eventName, payload string) 
 	}
 
 	for _, sub := range subs {
-		if err := post(sub.HandlerUrl, payload); err != nil {
+		if err := s.post(sub.HandlerUrl, payload); err != nil {
+			s.sentEventFailed(projectID, &sub, eventName, err.Error())
 			return err
 		}
+
+		s.sentEventSuccess(projectID, &sub, eventName)
 	}
 
 	return nil
 }
 
-func post(endpoint string, payload interface{}) error {
+func (s *service) post(endpoint string, payload interface{}) error {
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -95,4 +106,24 @@ func post(endpoint string, payload interface{}) error {
 	}
 
 	return nil
+}
+
+func (s *service) sentEventFailed(
+	projectID int,
+	sub *subscriber.Subscriber,
+	event, message string) error {
+
+	return s.sentRepo.Store(
+		sent.New(projectID, sub.ID, event, sub.HandlerUrl, message),
+	)
+}
+
+func (s *service) sentEventSuccess(
+	projectID int,
+	sub *subscriber.Subscriber,
+	event string) error {
+
+	return s.sentRepo.Store(
+		sent.New(projectID, sub.ID, event, sub.HandlerUrl, ""),
+	)
 }

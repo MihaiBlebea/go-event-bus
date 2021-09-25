@@ -33,6 +33,9 @@ func New(b bus.Service, proj project.Service, logger *logrus.Logger) {
 	api.Handle("/projects", project.ListHandler(proj, b)).
 		Methods(http.MethodGet)
 
+	api.Handle("/events", bus.SentEventsHandler(b, proj)).
+		Methods(http.MethodGet)
+
 	api.Handle("/subscribe", bus.SubscribeHandler(b, proj)).
 		Methods(http.MethodPost)
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/MihaiBlebea/go-event-bus/bus"
 	"github.com/MihaiBlebea/go-event-bus/bus/event"
+	"github.com/MihaiBlebea/go-event-bus/bus/sent"
 	"github.com/MihaiBlebea/go-event-bus/bus/subscriber"
 	"github.com/MihaiBlebea/go-event-bus/http"
 	"github.com/MihaiBlebea/go-event-bus/project"
@@ -50,6 +51,7 @@ var startCmd = &cobra.Command{
 			&subscriber.Subscriber{},
 			&event.Event{},
 			&project.Project{},
+			&sent.Sent{},
 		); err != nil {
 			return err
 		}
